@@ -1,10 +1,20 @@
-# Duangdee (ดวงดี) - Tarot Reading Backend (Go)
+# Duangdee - Tarot Reading Backend (Go)
 
-ระบบ Backend บริการดูดวงไพ่ทาโรต์พัฒนาด้วยภาษา **Go (Golang)** ออกแบบในรูปแบบ **Microservices Architecture**
+High-performance, scalable Tarot Card Reading Backend application developed in **Go (Golang)** using a **Microservices Architecture**.
+
+## Architecture & Technology Highlights
+- **Core Language**: Go 1.22+
+- **Web Framework**: Go Fiber (`gofiber/fiber`) for high-throughput, low-allocation REST APIs.
+- **API Gateway**: Kong Gateway for centralized authentication, rate limiting, and header transformation.
+- **Databases**: PostgreSQL (Isolated primary database per service) & Redis Cluster (Caching, Session Store, Daily Free Quotas).
+- **Messaging & Async Execution**: Apache Kafka (Event-Driven Architecture) + Asynq/Redis Queue (Background Task Workers).
+- **Containerization & Observability**: Multi-stage Distroless Docker images (< 20MB), Kubernetes-ready, EFK Stack (ElasticSearch, Fluentbit, Kibana) for centralized logging.
+
+---
 
 ## Documentation Index
 
-### 📐 Global System Specs
+### 📐 Global System Specifications
 - **[System Architecture & Kafka Flow](docs/architecture.md)**
 - **[Tarot Reading Modes & Pre-Reading Intention Spec](docs/reading_modes.md)**
 - **[Credit System & Reading Quota Engine Spec](docs/credit_quota.md)**
@@ -13,9 +23,9 @@
 - **[Kong API Gateway & Auth Header Forwarding Spec](docs/gateway_auth.md)**
 - **[Infrastructure & Observability Stack](docs/infrastructure.md)**
 
-### 📦 Services Breakdown
+### 📦 Microservices Architectural & Functional Specifications
 
-| Service | Architecture (`architecture.md`) | Functional Spec (`spec.md`) |
+| Service | Architecture Document (`architecture.md`) | Functional Specification (`spec.md`) |
 | :--- | :--- | :--- |
 | 🔑 **Auth Service** | [services/auth/docs/architecture.md](services/auth/docs/architecture.md) | [services/auth/docs/spec.md](services/auth/docs/spec.md) |
 | 🃏 **Tarot Core Service** | [services/tarot/docs/architecture.md](services/tarot/docs/architecture.md) | [services/tarot/docs/spec.md](services/tarot/docs/spec.md) |
