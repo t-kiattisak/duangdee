@@ -1,0 +1,10 @@
+go 1.22
+
+use (
+	./pkg
+	./services/auth
+	./services/notification
+	./services/payment
+	./services/reading
+	./services/tarot
+)
