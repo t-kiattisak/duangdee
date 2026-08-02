@@ -1,0 +1,27 @@
+# Git & Version Control
+.git
+.gitignore
+.github
+
+# Documentation & Specifications
+docs/
+*.md
+
+# Local Temporary & Build Artifacts
+tmp/
+bin/
+*.exe
+*.test
+*.out
+.DS_Store
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker Compose Local Files
+docker-compose*.yml
+config/
+db/

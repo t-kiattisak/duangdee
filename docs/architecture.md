@@ -1,7 +1,7 @@
 # System Architecture Overview - Duangdee (Tarot Service)
 
 ## Tech Stack & Design Pattern
-- **Language**: Go 1.22+
+- **Language**: Go 1.22+ (Go Workspaces enabled for multi-module monorepo)
 - **Pattern**: Microservices Architecture
 - **API Gateway**: Kong Gateway (Centralized Auth, Rate Limiting, Header Injection)
 - **Containerization**: Multi-Stage Docker Builds (Distroless Security Image) + Docker Compose

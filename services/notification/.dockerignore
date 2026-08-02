@@ -1,0 +1,21 @@
+# Git & Version Control
+.git
+.gitignore
+
+# Documentation & Specifications
+docs/
+*.md
+
+# Local Temporary & Build Artifacts
+tmp/
+bin/
+*.exe
+*.test
+*.out
+.DS_Store
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo

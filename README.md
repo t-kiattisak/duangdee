@@ -3,7 +3,7 @@
 High-performance, scalable Tarot Card Reading Backend application developed in **Go (Golang)** using a **Microservices Architecture**.
 
 ## Architecture & Technology Highlights
-- **Core Language**: Go 1.22+
+- **Core Language**: Go 1.22+ (Multi-module monorepo using Go Workspaces `go.work`)
 - **Web Framework**: Go Fiber (`gofiber/fiber`) for high-throughput, low-allocation REST APIs.
 - **API Gateway**: Kong Gateway for centralized authentication, rate limiting, and header transformation.
 - **Databases**: PostgreSQL (Database-per-service pattern) & Redis Cluster (Caching, Session Store, Daily Free Quotas).

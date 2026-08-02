@@ -1,0 +1,57 @@
+_format_version: "3.0"
+_transform: true
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - X-User-ID
+      credentials: true
+
+services:
+  - name: auth-service
+    url: http://auth-service:8080
+    routes:
+      - name: auth-routes
+        paths:
+          - /api/v1/auth
+          - /api/v1/users
+
+  - name: tarot-service
+    url: http://tarot-service:8080
+    routes:
+      - name: tarot-routes
+        paths:
+          - /api/v1/tarot
+
+  - name: reading-service
+    url: http://reading-service:8080
+    routes:
+      - name: reading-routes
+        paths:
+          - /api/v1/readings
+
+  - name: payment-service
+    url: http://payment-service:8080
+    routes:
+      - name: payment-routes
+        paths:
+          - /api/v1/payments
+
+  - name: notification-service
+    url: http://notification-service:8080
+    routes:
+      - name: notification-routes
+        paths:
+          - /api/v1/notifications
