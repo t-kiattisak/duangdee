@@ -74,7 +74,7 @@ The **Reading Engine Service** is the central domain orchestrator for tarot read
           "position_index": 1,
           "position_name": "อดีต",
           "card_id": 0,
-          "card_name_th": "The Fool",
+          "card_name": "The Fool",
           "orientation": "upright",
           "image_url": "https://cdn.duangdee.com/cards/0_the_fool.png",
           "meaning": "การเริ่มต้นความรักครั้งใหม่ที่เต็มไปด้วยความตื่นเต้น..."

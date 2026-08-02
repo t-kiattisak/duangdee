@@ -39,8 +39,8 @@ The **Tarot Core Service** is the central Tarot knowledge base. It manages stati
       "cards": [
         {
           "id": 0,
-          "name_en": "The Fool",
-          "name_th": "เดอะ ฟูล (ผู้โง่เขลา)",
+          "name": "The Fool",
+          "name": "เดอะ ฟูล (ผู้โง่เขลา)",
           "arcana_type": "major",
           "suit": null,
           "number": 0,
@@ -83,17 +83,17 @@ The **Tarot Core Service** is the central Tarot knowledge base. It manages stati
       {
         "card_id": 0,
         "position_index": 1,
-        "card_name_th": "The Fool",
+        "card_name": "The Fool",
         "orientation": "upright",
-        "meaning_th": "การเริ่มต้นความรักครั้งใหม่ที่เต็มไปด้วยความตื่นเต้นและอิสระ...",
+        "meaning": "การเริ่มต้นความรักครั้งใหม่ที่เต็มไปด้วยความตื่นเต้นและอิสระ...",
         "keywords": ["การเริ่มต้นใหม่", "ความรักอิสระ", "ความเสี่ยงที่น่าหลงใหล"]
       },
       {
         "card_id": 6,
         "position_index": 2,
-        "card_name_th": "The Lovers",
+        "card_name": "The Lovers",
         "orientation": "reversed",
-        "meaning_th": "ความขัดแย้งในความสัมพันธ์ การตัดสินใจที่ผิดพลาด หรือทางขนาน...",
+        "meaning": "ความขัดแย้งในความสัมพันธ์ การตัดสินใจที่ผิดพลาด หรือทางขนาน...",
         "keywords": ["ความไม่เข้าใจกัน", "ทางเลือกที่ยากลำบาก", "ความร้าวฉาน"]
       }
     ]
