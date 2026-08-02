@@ -5,7 +5,7 @@
 - **Pattern**: Microservices Architecture
 - **API Gateway**: Kong Gateway (Centralized Auth, Rate Limiting, Header Injection)
 - **Containerization**: Multi-Stage Docker Builds (Distroless Security Image) + Docker Compose
-- **Database**: PostgreSQL (Primary Storage per service) + Redis (Caching, Session, Daily Free Quota)
+- **Database Architecture**: PostgreSQL (Database-per-service pattern) + Redis Cluster
 - **Credit & Quota Engine**: Redis TTL (Daily Free Quota) + PostgreSQL Acid Double-Entry Ledger
 - **Messaging & Event-Driven**: Apache Kafka (Event Streaming) + Asynq/Redis (Distributed Task Queue)
 - **Communication**: HTTP REST (Gateway) + gRPC (Inter-service) + Apache Kafka (Event Bus)
@@ -13,12 +13,13 @@
 
 ## Global Architecture Specifications
 1. 📐 **[High-Level Architecture & Kafka Flow](architecture.md)**
-2. 🔮 **[Tarot Reading Modes & Pre-Reading Intention Spec](reading_modes.md)**
+2. 🗄️ **[Comprehensive Database Design & Schemas Summary](db_design_summary.md)**
 3. 💰 **[Credit System & Reading Quota Engine Spec](credit_quota.md)**
-4. 🐳 **[Docker Containerization & Docker-Compose Spec](docker.md)**
-5. ⚡ **[Event-Driven Architecture & Task Queue Spec (Kafka vs Asynq)](event_queue.md)**
-6. 🚪 **[Kong API Gateway & Auth Forwarding Specification](gateway_auth.md)**
-7. 🏗️ **[Infrastructure & Kibana Observability](infrastructure.md)**
+4. 🔮 **[Tarot Reading Modes & Pre-Reading Intention Spec](reading_modes.md)**
+5. 🐳 **[Docker Containerization & Docker-Compose Spec](docker.md)**
+6. ⚡ **[Event-Driven Architecture & Task Queue Spec (Kafka vs Asynq)](event_queue.md)**
+7. 🚪 **[Kong API Gateway & Auth Forwarding Specification](gateway_auth.md)**
+8. 🏗️ **[Infrastructure & Kibana Observability](infrastructure.md)**
 
 ## Services Breakdown (Architecture & Functional Specifications)
 

@@ -6,7 +6,7 @@ High-performance, scalable Tarot Card Reading Backend application developed in *
 - **Core Language**: Go 1.22+
 - **Web Framework**: Go Fiber (`gofiber/fiber`) for high-throughput, low-allocation REST APIs.
 - **API Gateway**: Kong Gateway for centralized authentication, rate limiting, and header transformation.
-- **Databases**: PostgreSQL (Isolated primary database per service) & Redis Cluster (Caching, Session Store, Daily Free Quotas).
+- **Databases**: PostgreSQL (Database-per-service pattern) & Redis Cluster (Caching, Session Store, Daily Free Quotas).
 - **Messaging & Async Execution**: Apache Kafka (Event-Driven Architecture) + Asynq/Redis Queue (Background Task Workers).
 - **Containerization & Observability**: Multi-stage Distroless Docker images (< 20MB), Kubernetes-ready, EFK Stack (ElasticSearch, Fluentbit, Kibana) for centralized logging.
 
@@ -16,6 +16,7 @@ High-performance, scalable Tarot Card Reading Backend application developed in *
 
 ### 📐 Global System Specifications
 - **[System Architecture & Kafka Flow](docs/architecture.md)**
+- **[Comprehensive Database Design & Schemas Summary](docs/db_design_summary.md)**
 - **[Tarot Reading Modes & Pre-Reading Intention Spec](docs/reading_modes.md)**
 - **[Credit System & Reading Quota Engine Spec](docs/credit_quota.md)**
 - **[Docker Containerization & Local Dev Stack Spec](docs/docker.md)**

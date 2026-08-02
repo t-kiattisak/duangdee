@@ -3,7 +3,7 @@
 ---
 
 ## 1. Role & Purpose of the Service
-The **Tarot Core Service** is the central Tarot knowledge base. It manages static metadata for all 78 tarot cards, stores multi-category upright and reversed card interpretations, manages spread layout definitions, and serves high-speed card details to clients and other services via Redis L2 cache and gRPC.
+The **Tarot Core Service** is the central Tarot knowledge base. It manages static metadata for all 78 tarot cards, stores single-language upright and reversed card interpretations, manages spread layout definitions, and serves high-speed card details to clients and other services via Redis L2 cache and gRPC.
 
 ---
 
@@ -16,20 +16,44 @@ The **Tarot Core Service** is the central Tarot knowledge base. It manages stati
    - Every card has **10 distinct interpretation entries**:
      - 2 Orientations: **Upright (หัวตั้ง)** & **Reversed (หัวกลับ)**.
      - 5 Categories per orientation: **General (ทั่วไป)**, **Love (ความรัก)**, **Work (การงาน)**, **Finance (การเงิน)**, **Health (สุขภาพ)**.
-3. **Spread Layout Rule Definitions**:
-   - Defines position meanings for supported spreads:
-     - `single-card`: Position 1 = General Advice.
-     - `three-card`: Position 1 = Past, Position 2 = Present, Position 3 = Future.
-     - `celtic-cross`: 10 distinct position meanings (Current State, Obstacle, Goal, Past, Recent Past, Future, Self, Environment, Hopes/Fears, Outcome).
-4. **L2 In-Memory Caching (Redis)**:
-   - At startup, the service loads the entire card meanings dictionary into Redis Hash maps.
-   - All internal gRPC calls from Reading Service query Redis first to achieve sub-2ms response times.
+3. **Native PostgreSQL Array Type (`TEXT[]`)**:
+   - The `keywords` column is stored as PostgreSQL's native `TEXT[]` array.
+   - Example DB Insert: `'{"ความไม่เข้าใจกัน", "ทางเลือกที่ยากลำบาก", "ความร้าวฉาน"}'`
+   - In Go, `pgx` automatically scans `TEXT[]` into `[]string`.
 
 ---
 
-## 3. Client Interaction & Request-Response Contracts (REST API)
+## 3. Database Schema & Data Models
 
-### 3.1 `GET /api/v1/tarot/cards` (List Deck Catalog)
+### Table: `card_meanings`
+```sql
+CREATE TABLE card_meanings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    card_id INT NOT NULL REFERENCES tarot_cards(id),
+    orientation VARCHAR(10) NOT NULL, -- 'upright', 'reversed'
+    category VARCHAR(30) NOT NULL, -- 'general', 'love', 'work', 'finance', 'health'
+    meaning TEXT NOT NULL,
+    keywords TEXT[] NOT NULL DEFAULT '{}' -- Stored as Native PostgreSQL Text Array
+);
+```
+
+### Example Database Record
+```sql
+INSERT INTO card_meanings (card_id, orientation, category, meaning, keywords)
+VALUES (
+    6, 
+    'reversed', 
+    'love', 
+    'ความขัดแย้งในความสัมพันธ์ การตัดสินใจที่ผิดพลาด หรือทางขนาน...', 
+    ARRAY['ความไม่เข้าใจกัน', 'ทางเลือกที่ยากลำบาก', 'ความร้าวฉาน']
+);
+```
+
+---
+
+## 4. Client Interaction & Request-Response Contracts (REST API)
+
+### 4.1 `GET /api/v1/tarot/cards` (List Deck Catalog)
 - **Client Sends**: `GET /api/v1/tarot/cards?arcana=major`
 - **Client Receives (Response HTTP 200 OK)**:
   ```json
@@ -40,7 +64,6 @@ The **Tarot Core Service** is the central Tarot knowledge base. It manages stati
         {
           "id": 0,
           "name": "The Fool",
-          "name": "เดอะ ฟูล (ผู้โง่เขลา)",
           "arcana_type": "major",
           "suit": null,
           "number": 0,
@@ -51,21 +74,12 @@ The **Tarot Core Service** is the central Tarot knowledge base. It manages stati
   }
   ```
 
-### 3.2 `GET /api/v1/tarot/cards/:id` (Get Single Card Detail)
-- **Client Sends**: `GET /api/v1/tarot/cards/0`
-- **Client Receives (Response HTTP 200 OK)**: Complete card info + meanings for all categories.
-
-### 3.3 `GET /api/v1/tarot/spreads` (List Available Spreads)
-- **Client Sends**: `GET /api/v1/tarot/spreads`
-- **Client Receives (Response HTTP 200 OK)**: List of supported layouts and position descriptions.
-
 ---
 
-## 4. Internal Service-to-Service Contracts (gRPC)
+## 5. Internal Service-to-Service Contracts (gRPC)
 
 ### `rpc BatchGetMeanings(BatchGetMeaningsRequest) returns (BatchGetMeaningsResponse)`
 - **Caller**: Reading Engine Service
-- **Purpose**: Fetch meanings for drawn cards in a specific reading session.
 - **Request Payload**:
   ```json
   {
