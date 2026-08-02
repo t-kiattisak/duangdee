@@ -9,6 +9,7 @@ COPY pkg/ ./pkg/
 COPY services/auth/ ./services/auth/
 
 WORKDIR /app/services/auth
+RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
     -o /app/bin/server ./cmd/main.go

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"duangdee/pkg/kafka"
 	"duangdee/pkg/logger"
+	"duangdee/pkg/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -22,15 +22,8 @@ func main() {
 
 	app.Use(cors.New())
 
-	// Middleware to log HTTP Requests in Structured JSON for Kibana
-	app.Use(func(c *fiber.Ctx) error {
-		sysLogger.Info("Incoming HTTP Request", map[string]interface{}{
-			"method": c.Method(),
-			"path":   c.Path(),
-			"ip":     c.IP(),
-		})
-		return c.Next()
-	})
+	// Attach HTTP Request/Response Metadata Logger Middleware
+	app.Use(middleware.Logger(sysLogger))
 
 	app.Get("/healthz", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
@@ -62,11 +55,10 @@ func main() {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
 
-		sysLogger.Info("Published user.registered event to Kafka successfully", map[string]interface{}{
-			"topic": "user.registered",
+		return c.JSON(fiber.Map{
+			"status":  "published_to_kafka",
+			"message": "Test event published successfully",
 		})
-
-		return c.JSON(fiber.Map{"status": "published_to_kafka"})
 	})
 
 	port := os.Getenv("PORT")
@@ -74,8 +66,9 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Auth Service running on port %s", port)
+	sysLogger.Info("Service started", map[string]interface{}{"port": port})
 	if err := app.Listen(":" + port); err != nil {
-		log.Fatalf("Error starting server: %v", err)
+		sysLogger.Error(err, "Failed to start server", nil)
+		os.Exit(1)
 	}
 }

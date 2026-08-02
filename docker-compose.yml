@@ -71,7 +71,7 @@ services:
       - ./config/kong.yml:/kong/kong.yml
 
   # =========================================================================
-  # Observability Stack (ElasticSearch & Kibana)
+  # Observability Stack (ElasticSearch, Kibana & Fluentbit)
   # =========================================================================
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -84,6 +84,28 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  elasticsearch-setup:
+    image: curlimages/curl:8.5.0
+    container_name: duangdee-elasticsearch-setup
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./config/ecs-index-template.json:/config/ecs-index-template.json:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        curl -sf -X PUT "http://elasticsearch:9200/_index_template/duangdee-logs" \
+          -H "Content-Type: application/json" \
+          -d @/config/ecs-index-template.json
+        echo "ECS index template applied"
+    restart: "no"
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.12.0
@@ -95,6 +117,22 @@ services:
     depends_on:
       - elasticsearch
 
+  fluentbit:
+    image: fluent/fluent-bit:3.0
+    container_name: duangdee-fluentbit
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./config/parsers.conf:/fluent-bit/etc/parsers.conf
+      - ./config/ecs_map.lua:/fluent-bit/etc/ecs_map.lua
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      elasticsearch-setup:
+        condition: service_completed_successfully
+
   # =========================================================================
   # Go Microservices
   # =========================================================================
@@ -105,6 +143,11 @@ services:
     container_name: auth-service
     ports:
       - "8081:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: auth-service
     environment:
       - PORT=8080
       - DB_SOURCE=postgres://postgres:secretpassword@postgres:5432/auth_db?sslmode=disable
@@ -115,6 +158,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      fluentbit:
+        condition: service_started
 
   tarot-service:
     build:
@@ -123,6 +168,11 @@ services:
     container_name: tarot-service
     ports:
       - "8082:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: tarot-service
     environment:
       - PORT=8080
       - DB_SOURCE=postgres://postgres:secretpassword@postgres:5432/tarot_db?sslmode=disable
@@ -130,6 +180,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      fluentbit:
+        condition: service_started
 
   reading-service:
     build:
@@ -138,6 +190,11 @@ services:
     container_name: reading-service
     ports:
       - "8083:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: reading-service
     environment:
       - PORT=8080
       - DB_SOURCE=postgres://postgres:secretpassword@postgres:5432/reading_db?sslmode=disable
@@ -146,6 +203,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      fluentbit:
+        condition: service_started
 
   payment-service:
     build:
@@ -154,6 +213,11 @@ services:
     container_name: payment-service
     ports:
       - "8084:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: payment-service
     environment:
       - PORT=8080
       - DB_SOURCE=postgres://postgres:secretpassword@postgres:5432/payment_db?sslmode=disable
@@ -162,6 +226,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      fluentbit:
+        condition: service_started
 
   notification-service:
     build:
@@ -170,6 +236,11 @@ services:
     container_name: notification-service
     ports:
       - "8085:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: notification-service
     environment:
       - PORT=8080
       - DB_SOURCE=postgres://postgres:secretpassword@postgres:5432/notification_db?sslmode=disable
@@ -178,6 +249,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      fluentbit:
+        condition: service_started
 
 volumes:
   postgres_data:

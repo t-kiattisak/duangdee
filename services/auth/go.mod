@@ -1,6 +1,6 @@
 module duangdee/auth
 
-go 1.22
+go 1.23
 
 require (
 	duangdee/pkg v0.0.0

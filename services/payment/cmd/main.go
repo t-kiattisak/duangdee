@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
 	"os"
+
+	"duangdee/pkg/logger"
+	"duangdee/pkg/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -14,8 +15,10 @@ func main() {
 		AppName: "Duangdee Payment Service",
 	})
 
-	app.Use(logger.New())
+	sysLogger := logger.New("payment-service")
+
 	app.Use(cors.New())
+	app.Use(middleware.Logger(sysLogger))
 
 	app.Get("/healthz", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
@@ -29,8 +32,9 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Payment Service running on port %s", port)
+	sysLogger.Info("Service started", map[string]interface{}{"port": port})
 	if err := app.Listen(":" + port); err != nil {
-		log.Fatalf("Error starting server: %v", err)
+		sysLogger.Error(err, "Failed to start server", nil)
+		os.Exit(1)
 	}
 }
