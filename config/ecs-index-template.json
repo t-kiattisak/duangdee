@@ -1,0 +1,40 @@
+{
+  "index_patterns": ["duangdee-logs*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message": { "type": "text" },
+        "log.level": { "type": "keyword" },
+        "log.origin.file.name": { "type": "keyword" },
+        "service.name": { "type": "keyword" },
+        "trace.id": { "type": "keyword" },
+        "client.ip": { "type": "ip" },
+        "container.id": { "type": "keyword" },
+        "container.name": { "type": "keyword" },
+        "event.module": { "type": "keyword" },
+        "event.dataset": { "type": "keyword" },
+        "event.kind": { "type": "keyword" },
+        "event.category": { "type": "keyword" },
+        "event.type": { "type": "keyword" },
+        "http.request.method": { "type": "keyword" },
+        "http.response.status_code": { "type": "long" },
+        "http.request.body.content": { "type": "text", "index": false },
+        "http.response.body.content": { "type": "text", "index": false },
+        "http.request.headers": { "type": "flattened" },
+        "url.path": { "type": "keyword" },
+        "url.query": { "type": "keyword" },
+        "user_agent.original": { "type": "keyword" }
+      }
+    }
+  },
+  "priority": 200,
+  "_meta": {
+    "description": "ECS field mappings for Duangdee microservice logs"
+  }
+}
