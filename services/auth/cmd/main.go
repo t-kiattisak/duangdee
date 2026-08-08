@@ -77,6 +77,7 @@ func main() {
 	// API V1 Routes
 	api := app.Group("/api/v1/auth")
 	api.Post("/register", authHandler.Register)
+	api.Post("/login", authHandler.Login)
 
 	port := os.Getenv("PORT")
 	if port == "" {

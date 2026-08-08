@@ -29,6 +29,12 @@ type RegisterRequest struct {
 	BirthDate string `json:"birth_date,omitempty"` // YYYY-MM-DD
 }
 
+// LoginRequest defines the input payload for user login
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // AuthResponse defines the standard authentication result
 type AuthResponse struct {
 	User         *User  `json:"user"`
@@ -46,4 +52,5 @@ type UserRepository interface {
 // AuthUsecase defines the business logic contract for Authentication
 type AuthUsecase interface {
 	Register(ctx context.Context, req *RegisterRequest) (*AuthResponse, error)
+	Login(ctx context.Context, req *LoginRequest) (*AuthResponse, error)
 }

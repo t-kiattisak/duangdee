@@ -16,7 +16,8 @@ import (
 
 var (
 	ErrUsernameAlreadyExists = errors.New("username is already taken")
-	ErrInvalidCredentials     = errors.New("invalid username or password")
+	ErrInvalidCredentials    = errors.New("invalid username or password")
+	ErrAccountInactive       = errors.New("user account is inactive")
 )
 
 type authUsecase struct {
@@ -98,6 +99,39 @@ func (u *authUsecase) Register(ctx context.Context, req *domain.RegisterRequest)
 				"last_name":  user.LastName,
 			},
 		})
+	}
+
+	return &domain.AuthResponse{
+		User:         user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (u *authUsecase) Login(ctx context.Context, req *domain.LoginRequest) (*domain.AuthResponse, error) {
+	// 1. Fetch user by username
+	user, err := u.userRepo.GetUserByUsername(ctx, req.Username)
+	if err != nil {
+		return nil, fmt.Errorf("error querying user: %w", err)
+	}
+	if user == nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	// 2. Verify password with Bcrypt
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	// 3. Verify user account status
+	if !user.IsActive {
+		return nil, ErrAccountInactive
+	}
+
+	// 4. Generate new JWT Access Token & Refresh Token
+	accessToken, refreshToken, err := u.tokenMaker.GenerateTokens(user.ID, user.Username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tokens: %w", err)
 	}
 
 	return &domain.AuthResponse{
