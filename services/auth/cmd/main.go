@@ -2,37 +2,43 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 
+	"duangdee/auth/internal/delivery/http"
+	"duangdee/auth/internal/repository"
+	"duangdee/auth/internal/usecase"
+	"duangdee/auth/pkg/jwt"
 	"duangdee/pkg/kafka"
 	"duangdee/pkg/logger"
 	"duangdee/pkg/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-	app := fiber.New(fiber.Config{
-		AppName: "Duangdee Auth Service",
-	})
-
-	// Initialize Shared Zerolog JSON Logger
 	sysLogger := logger.New("auth-service")
 
-	app.Use(cors.New())
+	// 1. Database Connection Pool Setup (PostgreSQL auth_db)
+	dbSource := os.Getenv("DB_SOURCE")
+	if dbSource == "" {
+		dbSource = "postgres://postgres:secretpassword@postgres:5432/auth_db?sslmode=disable"
+	}
 
-	// Attach HTTP Request/Response Metadata Logger Middleware
-	app.Use(middleware.Logger(sysLogger))
+	dbPool, err := pgxpool.New(context.Background(), dbSource)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
+	defer dbPool.Close()
 
-	app.Get("/healthz", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"service": "auth-service",
-		})
-	})
+	if err := dbPool.Ping(context.Background()); err != nil {
+		log.Fatalf("Database ping failed: %v", err)
+	}
+	log.Println("Connected to PostgreSQL (auth_db) successfully")
 
-	// Test Producer for Kafka
+	// 2. Kafka Producer Setup
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
 	if kafkaBrokers == "" {
 		kafkaBrokers = "kafka:9092"
@@ -40,35 +46,45 @@ func main() {
 	producer := kafka.NewProducer([]string{kafkaBrokers})
 	defer producer.Close()
 
-	// Test Route: Emit event to Kafka
-	app.Post("/api/v1/auth/test-event", func(c *fiber.Ctx) error {
-		err := producer.Publish(context.Background(), "user.registered", "test_user_1", kafka.EventMessage{
-			EventID:   "evt_test_123",
-			EventType: "user.registered",
-			Data: map[string]interface{}{
-				"user_id": "usr_test_123",
-				"email":   "test@duangdee.com",
-			},
-		})
-		if err != nil {
-			sysLogger.Error(err, "Failed to publish test event to Kafka", nil)
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-		}
+	// 3. JWT Token Maker Setup
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "supersecretduangdeeauthkey123"
+	}
+	tokenMaker := jwt.NewTokenMaker(jwtSecret)
 
+	// 4. Clean Architecture Dependency Wiring
+	userRepo := repository.NewUserRepository(dbPool)
+	authUsecase := usecase.NewAuthUsecase(userRepo, tokenMaker, producer)
+	authHandler := http.NewAuthHandler(authUsecase)
+
+	// 5. Go Fiber Web Framework Initialization
+	app := fiber.New(fiber.Config{
+		AppName: "Duangdee Auth Service",
+	})
+
+	app.Use(cors.New())
+	app.Use(middleware.Logger(sysLogger))
+
+	// Health Check Route
+	app.Get("/healthz", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status":  "published_to_kafka",
-			"message": "Test event published successfully",
+			"status":  "ok",
+			"service": "auth-service",
 		})
 	})
+
+	// API V1 Routes
+	api := app.Group("/api/v1/auth")
+	api.Post("/register", authHandler.Register)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	sysLogger.Info("Service started", map[string]interface{}{"port": port})
+	log.Printf("Auth Service running on port %s", port)
 	if err := app.Listen(":" + port); err != nil {
-		sysLogger.Error(err, "Failed to start server", nil)
-		os.Exit(1)
+		log.Fatalf("Error starting server: %v", err)
 	}
 }
