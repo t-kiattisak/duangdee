@@ -27,6 +27,7 @@ services:
         paths:
           - /api/v1/auth
           - /api/v1/users
+        strip_path: false
 
   - name: tarot-service
     url: http://tarot-service:8080
@@ -34,6 +35,7 @@ services:
       - name: tarot-routes
         paths:
           - /api/v1/tarot
+        strip_path: false
 
   - name: reading-service
     url: http://reading-service:8080
@@ -41,6 +43,7 @@ services:
       - name: reading-routes
         paths:
           - /api/v1/readings
+        strip_path: false
 
   - name: payment-service
     url: http://payment-service:8080
@@ -48,6 +51,7 @@ services:
       - name: payment-routes
         paths:
           - /api/v1/payments
+        strip_path: false
 
   - name: notification-service
     url: http://notification-service:8080
@@ -55,3 +59,4 @@ services:
       - name: notification-routes
         paths:
           - /api/v1/notifications
+        strip_path: false

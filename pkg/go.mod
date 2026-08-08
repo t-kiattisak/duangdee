@@ -1,12 +1,12 @@
 module duangdee/pkg
 
-go 1.23
+go 1.22
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.14
 	github.com/google/uuid v1.6.0
-	github.com/rs/zerolog v1.35.1
-	github.com/segmentio/kafka-go v0.4.51
+	github.com/rs/zerolog v1.33.0
+	github.com/segmentio/kafka-go v0.4.47
 )
 
 require (

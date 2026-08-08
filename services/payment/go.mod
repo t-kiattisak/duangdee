@@ -1,6 +1,6 @@
 module duangdee/payment
 
-go 1.23
+go 1.22
 
 require (
 	duangdee/pkg v0.0.0
