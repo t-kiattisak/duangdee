@@ -35,6 +35,7 @@ services:
       - name: tarot-routes
         paths:
           - /api/v1/tarot
+          - /assets/cards
         strip_path: false
 
   - name: reading-service
